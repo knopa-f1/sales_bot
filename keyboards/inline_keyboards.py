@@ -1,11 +1,9 @@
-import json
-
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
+from keyboards.callback_factories import ProductsCallbackFactory
 from config_data.constants import PAGE_SIZE
 from lexicon.lexicon import LEXICON_BUTTONS_RU
-from services.utils import ButtonCallbackParams
 
 
 def create_inline_kb(width: int,
@@ -39,51 +37,49 @@ def create_inline_kb(width: int,
 def start_keyboard():
     return create_inline_kb(3, 'button-catalog', 'button-cart', 'button-faq')
 
-
-
 def category_keyboard(categories, page_number, count):
-    buttons = {ButtonCallbackParams('button-cur-cat', cat.id).to_json_string(): cat.name for cat in categories}
+    buttons = {ProductsCallbackFactory(button_name='cur-cat', category_id=cat.id).pack(): cat.name for cat in categories}
     if page_number > 1:
-        buttons[ButtonCallbackParams('button-cat-page',page=page_number-1).to_json_string()] = (
+        buttons[ProductsCallbackFactory(button_name='cat-page',page_id=page_number-1).pack()] = (
             LEXICON_BUTTONS_RU)["button-back"]
 
-    buttons[ButtonCallbackParams('button-start-menu').to_json_string()] = LEXICON_BUTTONS_RU["button-step-back"]
+    buttons[ProductsCallbackFactory(button_name='start-menu').pack()] = LEXICON_BUTTONS_RU["button-step-back"]
 
     if page_number*PAGE_SIZE < count:
-        buttons[ButtonCallbackParams('button-cat-page',page=page_number+1).to_json_string()] = (
+        buttons[ProductsCallbackFactory(button_name='cat-page',page_id=page_number+1).pack()] = (
             LEXICON_BUTTONS_RU)["button-forward"]
 
     return create_inline_kb(2, **buttons)
 
-# def category_keyboard(categories, page_number, count):
-#     buttons = {f'button-current-cat_cat:{cat.id}':cat.name for cat in categories}
-#     if page_number > 1:
-#         buttons[f'button-cat-choose-page_page:{page_number-1}'] = LEXICON_BUTTONS_RU["button-back"]
-#     buttons[f'button-start-menu'] = LEXICON_BUTTONS_RU["button-step-back"]
-#     if page_number*PAGE_SIZE < count:
-#         buttons[f'button-cat-choose-page_page:{page_number+1}'] = LEXICON_BUTTONS_RU["button-forward"]
-#     return create_inline_kb(2, **buttons)
 
 def subcategory_keyboard(subcategories, category_id, page_number, count):
-    buttons = {ButtonCallbackParams('button-cur-subcat', subcat=subcat.id).to_json_string():
+    buttons = {ProductsCallbackFactory(button_name='cur-subcat', category_id=category_id, subcategory_id=subcat.id).pack():
                                         subcat.name for subcat in subcategories}
 
     if page_number > 1:
-        buttons[ButtonCallbackParams('button-subcat-page',cat=category_id,
-                                     page=page_number-1).to_json_string()] = LEXICON_BUTTONS_RU["button-back"]
+        buttons[ProductsCallbackFactory(button_name='subcat-page',category_id=category_id,
+                                     page_id=page_number-1).pack()] = LEXICON_BUTTONS_RU["button-back"]
+
+    buttons[ProductsCallbackFactory(button_name='button-catalog').pack()] = LEXICON_BUTTONS_RU["button-step-back"]
 
     if page_number*PAGE_SIZE < count:
-        buttons[ButtonCallbackParams('button-subcat-page', cat=category_id,
-                                     page=page_number+1).to_json_string()] = LEXICON_BUTTONS_RU["button-forward"]
+        buttons[ProductsCallbackFactory(button_name='subcat-page', category_id=category_id,
+                                     page_id=page_number+1).pack()] = LEXICON_BUTTONS_RU["button-forward"]
 
     return create_inline_kb(2, **buttons)
 
-def product_keyboard(product, subcategory_id, page_number, count):
+def product_keyboard(product, category_id, subcategory_id, page_number, count):
     buttons = {}
     if page_number > 1:
-        buttons[ButtonCallbackParams('button-product-page', subcat=subcategory_id,
-                                     page=page_number-1).to_json_string()] = LEXICON_BUTTONS_RU["button-back"]
+        buttons[ProductsCallbackFactory(button_name='product-page', category_id=category_id, subcategory_id=subcategory_id,
+                                     page_id=page_number-1).pack()] = LEXICON_BUTTONS_RU["button-back"]
+
+    buttons[ProductsCallbackFactory(button_name='subcat-page', category_id=category_id, subcategory_id=subcategory_id).pack()] =\
+                                    LEXICON_BUTTONS_RU["button-step-back"]
+    buttons[ProductsCallbackFactory(button_name='add-cart', item_id=product.id).pack()] = \
+        LEXICON_BUTTONS_RU["button-add-cart"]
+
     if page_number < count:
-        buttons[ButtonCallbackParams('button-product-page', subcat=subcategory_id,
-                                 page=page_number+1).to_json_string()] = LEXICON_BUTTONS_RU["button-forward"]
+        buttons[ProductsCallbackFactory(button_name='product-page', category_id=category_id, subcategory_id=subcategory_id,
+                                 page_id=page_number+1).pack()] = LEXICON_BUTTONS_RU["button-forward"]
     return create_inline_kb(2, **buttons)

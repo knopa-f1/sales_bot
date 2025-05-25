@@ -69,7 +69,7 @@ async def get_products_by_catalog(
             .limit(1)
             .order_by(Product.id)
         )
-        product = result.scalar_one()
+        product = result.scalar_one_or_none()
 
         total_result = await session.execute(
             select(func.count()).select_from(

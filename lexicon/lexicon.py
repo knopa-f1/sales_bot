@@ -6,7 +6,10 @@ LEXICON_RU: dict[str, str] = {
     'choose_category': 'Выбери категорию',
     'choose_subcategory': 'Выбери подкатегорию',
     'no_products': 'В данном разделе нет товаров',
-    'input_count': 'Укажите количество товара'
+    'input_count': 'Укажите количество товара',
+    'add_to_cart': 'Добавить в корзину?',
+    'cart': 'Ваша корзина:',
+    'error_incorrect_count': 'Необходимо ввести положительное количество товара'
 }
 
 LEXICON_BUTTONS_RU: dict[str, str] = {
@@ -18,6 +21,10 @@ LEXICON_BUTTONS_RU: dict[str, str] = {
     'button-step-back':'Назад',
     'button-add-cart':'Добавить в корзину',
     'button-remove-cart':'Удалить из корзины',
+    'button-approve-add-cart':'Да',
+    'button-decline-add-cart':'Отмена',
+    'button-pay':'Оплатить',
+
 }
 
 LEXICON_COMMANDS_RU: dict[str, str] = {

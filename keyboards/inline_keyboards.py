@@ -43,7 +43,7 @@ def category_keyboard(categories, page_number, count):
         buttons[ProductsCallbackFactory(button_name='cat-page',page_id=page_number-1).pack()] = (
             LEXICON_BUTTONS_RU)["button-back"]
 
-    buttons[ProductsCallbackFactory(button_name='start-menu').pack()] = LEXICON_BUTTONS_RU["button-step-back"]
+    buttons['button-start-menu'] = LEXICON_BUTTONS_RU["button-step-back"]
 
     if page_number*PAGE_SIZE < count:
         buttons[ProductsCallbackFactory(button_name='cat-page',page_id=page_number+1).pack()] = (
@@ -60,7 +60,7 @@ def subcategory_keyboard(subcategories, category_id, page_number, count):
         buttons[ProductsCallbackFactory(button_name='subcat-page',category_id=category_id,
                                      page_id=page_number-1).pack()] = LEXICON_BUTTONS_RU["button-back"]
 
-    buttons[ProductsCallbackFactory(button_name='button-catalog').pack()] = LEXICON_BUTTONS_RU["button-step-back"]
+    buttons['button-catalog'] = LEXICON_BUTTONS_RU["button-step-back"]
 
     if page_number*PAGE_SIZE < count:
         buttons[ProductsCallbackFactory(button_name='subcat-page', category_id=category_id,
@@ -76,10 +76,22 @@ def product_keyboard(product, category_id, subcategory_id, page_number, count):
 
     buttons[ProductsCallbackFactory(button_name='subcat-page', category_id=category_id, subcategory_id=subcategory_id).pack()] =\
                                     LEXICON_BUTTONS_RU["button-step-back"]
-    buttons[ProductsCallbackFactory(button_name='add-cart', item_id=product.id).pack()] = \
+
+    buttons[ProductsCallbackFactory(button_name='input_count', item_id=product.id).pack()] = \
         LEXICON_BUTTONS_RU["button-add-cart"]
 
     if page_number < count:
         buttons[ProductsCallbackFactory(button_name='product-page', category_id=category_id, subcategory_id=subcategory_id,
                                  page_id=page_number+1).pack()] = LEXICON_BUTTONS_RU["button-forward"]
     return create_inline_kb(2, **buttons)
+
+def add_to_cart_keyboard(state_data):
+    buttons = {
+        ProductsCallbackFactory(button_name='button-catalog').pack(): LEXICON_BUTTONS_RU["button-decline-add-cart"],
+        ProductsCallbackFactory(button_name='add-cart', item_id=state_data['item_id'], count=state_data['count']).pack():
+            LEXICON_BUTTONS_RU[
+                "button-approve-add-cart"]}
+    return create_inline_kb(2, **buttons)
+
+def cart_keyboard():
+    return create_inline_kb(3, 'button-catalog', 'button-pay')

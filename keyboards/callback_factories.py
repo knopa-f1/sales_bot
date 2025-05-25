@@ -7,3 +7,4 @@ class ProductsCallbackFactory(CallbackData, prefix='button'):
     subcategory_id: int|None = None
     item_id: int|None = None
     page_id: int = 1
+    count:int|None = None

@@ -42,7 +42,7 @@ async def process_successful_payment(message: Message):
         )
 
         await message.answer(
-            text=f"✅ Оплата успешна!\n"
+            text=f"Оплата успешна!\n"
             f"Заказ #{order_id} на сумму {total_amount:.2f} {currency} оплачен.\n"
             f"Спасибо за покупку!",
             parse_mode = "HTML"

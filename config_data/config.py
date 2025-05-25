@@ -14,6 +14,7 @@ class DatabaseConfig(BaseSettings):
 class TgBot(BaseSettings):
     token: str = Field(..., alias="bot_token")
     yukassa_token: str = Field(..., alias="YUKASSA_TOKEN")
+    required_channel:str = Field(..., alias="REQUIRED_CHANNEL")
 
 
 class ConfigSettings(BaseSettings):
@@ -22,5 +23,6 @@ class ConfigSettings(BaseSettings):
     db: DatabaseConfig = DatabaseConfig()
     env_type: str = Field("test", env="ENV_TYPE")
     report_path: str
+
 
 config_settings = ConfigSettings()

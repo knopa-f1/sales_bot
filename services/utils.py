@@ -11,9 +11,9 @@ from db.requests.carts import get_cart_items
 
 def format_cart_message(cart_items, total) -> str:
     if not cart_items:
-        return "🛒 Ваша корзина пуста."
+        return "Ваша корзина пуста."
 
-    lines = ["🛒 <b>Ваша корзина:</b>\n"]
+    lines = ["<b>Ваша корзина:</b>\n"]
 
     for item in cart_items:
         name = item.product.name
@@ -28,9 +28,7 @@ def format_cart_message(cart_items, total) -> str:
 
 def format_order_confirmation_message(order) -> str:
     return (
-        f"✅ <b>Заказ №{order.id}</b> успешно оформлен!\n\n"
-        f"💰 Сумма: <b>{order.amount:.2f} ₽</b>\n"
-        f"📦 Доставка по адресу:\n{order.address}\n"
+        f"Доставка по адресу:\n{order.address}\n"
     )
 
 async def append_payment_to_excel(order_id: int, user_id: int, username: str, amount: float,

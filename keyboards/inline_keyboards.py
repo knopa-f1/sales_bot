@@ -1,6 +1,7 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
+from config_data.config import config_settings
 from keyboards.callback_factories import ProductsCallbackFactory, PaymentCallbackFactory
 from config_data.constants import PAGE_SIZE
 from lexicon.lexicon import LEXICON_BUTTONS_RU
@@ -96,8 +97,8 @@ def add_to_cart_keyboard(state_data):
 def cart_keyboard():
     return create_inline_kb(3, 'button-catalog', 'button-input-address')
 
-def pay_keyboard(order):
-    buttons ={
-        PaymentCallbackFactory(button_name='payment', order_id=order.id, amount=order.amount).pack(): LEXICON_BUTTONS_RU["button-pay"],
-    }
-    return create_inline_kb(1, **buttons)
+def check_subscription():
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text=LEXICON_BUTTONS_RU["button-go-to-channel"], url=f"https://t.me/{config_settings.tg_bot.required_channel.lstrip('@')}")],
+        [InlineKeyboardButton(text=LEXICON_BUTTONS_RU["button-check-subscription"], callback_data="button-check-subscription")]
+    ])

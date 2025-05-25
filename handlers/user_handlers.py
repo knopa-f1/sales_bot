@@ -1,5 +1,7 @@
+import logging
+
 from aiogram import Router, F, Bot
-from aiogram.enums import ContentType
+from aiogram.enums import ContentType, ChatMemberStatus
 from aiogram.filters import Command, CommandStart, StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery, InputMediaPhoto, FSInputFile, LabeledPrice
@@ -13,7 +15,7 @@ from db.requests.users import save_user
 from lexicon.lexicon import LEXICON_RU
 
 from keyboards.inline_keyboards import start_keyboard, category_keyboard, subcategory_keyboard, \
-    product_keyboard, add_to_cart_keyboard, cart_keyboard, pay_keyboard
+    product_keyboard, add_to_cart_keyboard, cart_keyboard
 from services.utils import format_cart_message, format_order_confirmation_message
 from states.states import AddToCart, PayTheCart
 
@@ -21,12 +23,24 @@ router = Router()
 
 KEYBOARD = start_keyboard()
 
+STATES = [ChatMemberStatus.MEMBER, ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.CREATOR]
+
 @router.message(CommandStart())
-async def process_start_command(message: Message):
+async def process_start_command(message: Message, bot: Bot):
     await save_user(
         chat_id=message.chat.id,
         name=message.from_user.full_name
     )
+
+    try:
+        member = await bot.get_chat_member(chat_id=config_settings.tg_bot.required_channel, user_id=message.chat.id)
+        if member.status not in STATES:
+            await message.answer(LEXICON_RU['error_unsubscribe_channel'])
+            return
+    except Exception as e:
+        logging.error(e)
+        await message.answer(LEXICON_RU['error_check_channel'])
+        return
 
     await message.answer(
         text=LEXICON_RU['/start'],
@@ -36,6 +50,21 @@ async def process_start_command(message: Message):
 @router.message(Command(commands='help'))
 async def process_help_command(message: Message):
     await message.edit_text(text=LEXICON_RU['/help'])
+
+@router.callback_query(F.data.startswith("button-check-subscription"))
+async def check_subscription(callback: CallbackQuery, bot: Bot):
+    try:
+        member = await bot.get_chat_member(chat_id=config_settings.tg_bot.required_channel, user_id=callback.message.chat.id)
+        if member.status in STATES:
+            await callback.message.edit_text(
+                text=LEXICON_RU['/start'],
+                reply_markup=start_keyboard()
+            )
+        else:
+            await callback.message.edit_text(LEXICON_RU['error_unsubscribe_channel'])
+    except Exception:
+            await callback.message.edit_text(LEXICON_RU['error_check_channel'])
+            return
 
 @router.callback_query(F.data.startswith('button-catalog'))
 async def process_button_catalog(callback: CallbackQuery):
@@ -146,26 +175,17 @@ async def process_button_input_address(callback: CallbackQuery, state: FSMContex
     await state.set_state(PayTheCart.waiting_address)
 
 @router.message(StateFilter(PayTheCart.waiting_address))
-async def process_address_sent(message: Message, state: FSMContext):
+async def process_address_sent(message: Message, state: FSMContext, bot: Bot):
     order = await create_order_from_cart(message.chat.id, message.text)
 
-    await message.answer(
-        text=format_order_confirmation_message(order),
-        reply_markup=pay_keyboard(order),
-        parse_mode="HTML"
-    )
     await state.clear()
 
-
-@router.callback_query(PaymentCallbackFactory.filter(F.button_name=='payment'))
-async def process_button_payment(callback: CallbackQuery, callback_data: PaymentCallbackFactory, bot: Bot):
-    prices = [LabeledPrice(label="К оплате", amount=int(callback_data.amount * 100))]
-
+    prices = [LabeledPrice(label="К оплате", amount=int(order.amount * 100))]
     await bot.send_invoice(
-        chat_id=callback.message.chat.id,
-        title=f"Заказ №{callback_data.order_id}",
-        description="description",
-        payload=f"order_{callback_data.order_id}",
+        chat_id=message.chat.id,
+        title=f"Заказ №{order.id}",
+        description=format_order_confirmation_message(order),
+        payload=f"order_{order.id}",
         provider_token=config_settings.tg_bot.yukassa_token,
         currency="RUB",
         prices=prices,

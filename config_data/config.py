@@ -9,7 +9,7 @@ load_dotenv(env_path)
 
 class DatabaseConfig(BaseSettings):
     dsn: str = Field("", alias="DSN")
-
+    image_path: str
 
 class TgBot(BaseSettings):
     token: str = Field(..., alias="bot_token")
@@ -21,4 +21,4 @@ class ConfigSettings(BaseSettings):
     db: DatabaseConfig = DatabaseConfig()
     env_type: str = Field("test", env="ENV_TYPE")
 
-config = ConfigSettings()
+config_settings = ConfigSettings()

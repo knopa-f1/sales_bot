@@ -1,8 +1,11 @@
+import json
+
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-from config_data.constants import page_size
+from config_data.constants import PAGE_SIZE
 from lexicon.lexicon import LEXICON_BUTTONS_RU
+from services.utils import ButtonCallbackParams
 
 
 def create_inline_kb(width: int,
@@ -34,32 +37,53 @@ def create_inline_kb(width: int,
     return kb_builder.as_markup()
 
 def start_keyboard():
-    return create_inline_kb(3, 'button_catalog', 'button_cart', 'button_faq')
+    return create_inline_kb(3, 'button-catalog', 'button-cart', 'button-faq')
 
-def pagination_keyboard(type_, categories, page_number, count):
-    buttons = {
-        f'button_current_{type_}_{cat.id}': cat.name for cat in categories
-    }
 
-    if page_number > 1:
-        buttons[f'button_{type_}_choose_page_{page_number - 1}'] = LEXICON_BUTTONS_RU["button_back"]
-    if page_number * page_size < count:
-        buttons[f'button_{type_}_choose_page_{page_number + 1}'] = LEXICON_BUTTONS_RU["button_forward"]
-
-    return create_inline_kb(2, **buttons)
 
 def category_keyboard(categories, page_number, count):
-    buttons = {f'button_current_cat_{cat.id}':cat.name for cat in categories}
+    buttons = {ButtonCallbackParams('button-cur-cat', cat.id).to_json_string(): cat.name for cat in categories}
     if page_number > 1:
-        buttons[f'button_cat_choose_page_{page_number-1}'] = LEXICON_BUTTONS_RU["button_back"]
-    if page_number*page_size < count:
-        buttons[f'button_cat_choose_page_{page_number+1}'] = LEXICON_BUTTONS_RU["button_forward"]
+        buttons[ButtonCallbackParams('button-cat-page',page=page_number-1).to_json_string()] = (
+            LEXICON_BUTTONS_RU)["button-back"]
+
+    buttons[ButtonCallbackParams('button-start-menu').to_json_string()] = LEXICON_BUTTONS_RU["button-step-back"]
+
+    if page_number*PAGE_SIZE < count:
+        buttons[ButtonCallbackParams('button-cat-page',page=page_number+1).to_json_string()] = (
+            LEXICON_BUTTONS_RU)["button-forward"]
+
     return create_inline_kb(2, **buttons)
 
+# def category_keyboard(categories, page_number, count):
+#     buttons = {f'button-current-cat_cat:{cat.id}':cat.name for cat in categories}
+#     if page_number > 1:
+#         buttons[f'button-cat-choose-page_page:{page_number-1}'] = LEXICON_BUTTONS_RU["button-back"]
+#     buttons[f'button-start-menu'] = LEXICON_BUTTONS_RU["button-step-back"]
+#     if page_number*PAGE_SIZE < count:
+#         buttons[f'button-cat-choose-page_page:{page_number+1}'] = LEXICON_BUTTONS_RU["button-forward"]
+#     return create_inline_kb(2, **buttons)
+
 def subcategory_keyboard(subcategories, category_id, page_number, count):
-    buttons = {f'button_current_subcat_{subcat.id}':subcat.name for subcat in subcategories}
+    buttons = {ButtonCallbackParams('button-cur-subcat', subcat=subcat.id).to_json_string():
+                                        subcat.name for subcat in subcategories}
+
     if page_number > 1:
-        buttons[f'button_subcat_choose_page_{category_id}_{page_number-1}'] = LEXICON_BUTTONS_RU["button_back"]
-    if page_number*page_size < count:
-        buttons[f'button_subcat_choose_page_{category_id}_{page_number+1}'] = LEXICON_BUTTONS_RU["button_forward"]
+        buttons[ButtonCallbackParams('button-subcat-page',cat=category_id,
+                                     page=page_number-1).to_json_string()] = LEXICON_BUTTONS_RU["button-back"]
+
+    if page_number*PAGE_SIZE < count:
+        buttons[ButtonCallbackParams('button-subcat-page', cat=category_id,
+                                     page=page_number+1).to_json_string()] = LEXICON_BUTTONS_RU["button-forward"]
+
+    return create_inline_kb(2, **buttons)
+
+def product_keyboard(product, subcategory_id, page_number, count):
+    buttons = {}
+    if page_number > 1:
+        buttons[ButtonCallbackParams('button-product-page', subcat=subcategory_id,
+                                     page=page_number-1).to_json_string()] = LEXICON_BUTTONS_RU["button-back"]
+    if page_number < count:
+        buttons[ButtonCallbackParams('button-product-page', subcat=subcategory_id,
+                                 page=page_number+1).to_json_string()] = LEXICON_BUTTONS_RU["button-forward"]
     return create_inline_kb(2, **buttons)

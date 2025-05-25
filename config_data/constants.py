@@ -1,1 +1,1 @@
-page_size=4
+PAGE_SIZE=4

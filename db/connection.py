@@ -1,13 +1,13 @@
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncEngine, async_sessionmaker, AsyncSession
 
-from config_data.config import config
+from config_data.config import config_settings
 
 
 class Database:
 
     def __init__(self) -> None:
-        self.__engine: AsyncEngine = create_async_engine(config.db.dsn,
-                                                         echo=config.env_type == "test")
+        self.__engine: AsyncEngine = create_async_engine(config_settings.db.dsn,
+                                                         echo=config_settings.env_type == "test")
         session = async_sessionmaker(bind=self.__engine)
         self.__session: AsyncSession = session()
 

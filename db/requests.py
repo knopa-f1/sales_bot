@@ -1,10 +1,12 @@
 from sqlalchemy import select, func
 from sqlalchemy.orm import selectinload
-from db.models import Catalog
+
+from config_data.constants import PAGE_SIZE
+from db.models import Catalog, Product
 from db.connection import database
 
 
-async def get_paginated_categories(page: int = 1, page_size: int = 4):
+async def get_paginated_categories(page: int = 1, page_size: int = PAGE_SIZE):
     offset = (page - 1) * page_size
 
     async with database.session as session:
@@ -29,7 +31,7 @@ async def get_paginated_categories(page: int = 1, page_size: int = 4):
         return categories, total_count
 
 async def get_subcategories_by_category(
-    category_id: int, page: int = 1, page_size: int = 10
+    category_id: int, page: int = 1, page_size: int = PAGE_SIZE
 ):
     offset = (page - 1) * page_size
 
@@ -39,6 +41,7 @@ async def get_subcategories_by_category(
             .where(Catalog.parent_id == category_id)
             .offset(offset)
             .limit(page_size)
+            .order_by(Catalog.id)
         )
         subcategories = result.scalars().all()
 
@@ -52,3 +55,29 @@ async def get_subcategories_by_category(
         total_count = total_result.scalar_one()
 
         return subcategories, total_count
+
+async def get_products_by_catalog(
+    catalog_id: int, page: int = 1
+):
+    offset = (page - 1)
+
+    async with database.session as session:
+        result = await session.execute(
+            select(Product)
+            .where(Product.catalog_id == catalog_id)
+            .offset(offset)
+            .limit(1)
+            .order_by(Product.id)
+        )
+        product = result.scalar_one()
+
+        total_result = await session.execute(
+            select(func.count()).select_from(
+                select(Product)
+                .where(Product.catalog_id == catalog_id)
+                .subquery()
+            )
+        )
+        total_count = total_result.scalar_one()
+
+        return product, total_count

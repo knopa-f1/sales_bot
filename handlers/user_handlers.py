@@ -49,7 +49,7 @@ async def process_start_command(message: Message, bot: Bot):
 
 @router.message(Command(commands='help'))
 async def process_help_command(message: Message):
-    await message.edit_text(text=LEXICON_RU['/help'])
+    await message.answer(text=LEXICON_RU['/help'])
 
 @router.callback_query(F.data.startswith("button-check-subscription"))
 async def check_subscription(callback: CallbackQuery, bot: Bot):

@@ -36,7 +36,7 @@ def create_inline_kb(width: int,
     return kb_builder.as_markup()
 
 def start_keyboard():
-    return create_inline_kb(3, 'button-catalog', 'button-cart', 'button-faq')
+    return create_inline_kb(3, 'button-catalog', 'button-cart')
 
 def category_keyboard(categories, page_number, count):
     buttons = {ProductsCallbackFactory(button_name='cur-cat', category_id=cat.id).pack(): cat.name for cat in categories}

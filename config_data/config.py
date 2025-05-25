@@ -13,6 +13,7 @@ class DatabaseConfig(BaseSettings):
 
 class TgBot(BaseSettings):
     token: str = Field(..., alias="bot_token")
+    yukassa_token: str = Field(..., alias="YUKASSA_TOKEN")
 
 
 class ConfigSettings(BaseSettings):

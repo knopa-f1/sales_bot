@@ -17,3 +17,10 @@ def format_cart_message(cart_items, total) -> str:
     lines.append(f"\n<b>Итого:</b> {total:.2f} ₽")
 
     return "\n".join(lines)
+
+def format_order_confirmation_message(order) -> str:
+    return (
+        f"✅ <b>Заказ №{order.id}</b> успешно оформлен!\n\n"
+        f"💰 Сумма: <b>{order.amount:.2f} ₽</b>\n"
+        f"📦 Доставка по адресу:\n<pre>{order.address}</pre>\n\n"
+    )

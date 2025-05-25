@@ -1,7 +1,7 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-from keyboards.callback_factories import ProductsCallbackFactory
+from keyboards.callback_factories import ProductsCallbackFactory, PaymentCallbackFactory
 from config_data.constants import PAGE_SIZE
 from lexicon.lexicon import LEXICON_BUTTONS_RU
 
@@ -94,4 +94,10 @@ def add_to_cart_keyboard(state_data):
     return create_inline_kb(2, **buttons)
 
 def cart_keyboard():
-    return create_inline_kb(3, 'button-catalog', 'button-pay')
+    return create_inline_kb(3, 'button-catalog', 'button-input-address')
+
+def pay_keyboard(order):
+    buttons ={
+        PaymentCallbackFactory(button_name='payment', order_id=order.id, amount=order.amount).pack(): LEXICON_BUTTONS_RU["button-pay"],
+    }
+    return create_inline_kb(1, **buttons)

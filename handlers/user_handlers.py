@@ -1,20 +1,21 @@
-from aiogram import Router, F
+from aiogram import Router, F, Bot
 from aiogram.enums import ContentType
 from aiogram.filters import Command, CommandStart, StateFilter
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, CallbackQuery, InputMediaPhoto, FSInputFile
+from aiogram.types import Message, CallbackQuery, InputMediaPhoto, FSInputFile, LabeledPrice
 
 from db.requests.carts import add_to_cart, get_cart_items
-from keyboards.callback_factories import ProductsCallbackFactory
+from db.requests.orders import create_order_from_cart
+from keyboards.callback_factories import ProductsCallbackFactory, PaymentCallbackFactory
 from config_data.config import config_settings
 from db.requests.categories_products import get_paginated_categories, get_subcategories_by_category, get_products_by_catalog
 from db.requests.users import save_user
 from lexicon.lexicon import LEXICON_RU
 
 from keyboards.inline_keyboards import start_keyboard, category_keyboard, subcategory_keyboard, \
-    product_keyboard, add_to_cart_keyboard, cart_keyboard
-from services.utils import format_cart_message
-from states.states import AddToCard
+    product_keyboard, add_to_cart_keyboard, cart_keyboard, pay_keyboard
+from services.utils import format_cart_message, format_order_confirmation_message
+from states.states import AddToCart, PayTheCart
 
 router = Router()
 
@@ -111,10 +112,10 @@ async def process_button_input_count(callback: CallbackQuery, callback_data: Pro
     await state.update_data(item_id=callback_data.item_id,
                             category_id=callback_data.category_id,
                             subcategory_id=callback_data.subcategory_id)
-    await state.set_state(AddToCard.waiting_count)
+    await state.set_state(AddToCart.waiting_count)
 
 
-@router.message(StateFilter(AddToCard.waiting_count),
+@router.message(StateFilter(AddToCart.waiting_count),
                 lambda x: x.text.isdigit() and 0 < int(x.text))
 async def process_count_sent(message: Message, state: FSMContext):
     await state.update_data(count=int(message.text))
@@ -123,8 +124,9 @@ async def process_count_sent(message: Message, state: FSMContext):
         text=LEXICON_RU['add_to_cart'],
         reply_markup=add_to_cart_keyboard(state_data)
     )
+    await state.clear()
 
-@router.message(StateFilter(AddToCard.waiting_count))
+@router.message(StateFilter(AddToCart.waiting_count))
 async def warning_count(message: Message):
     await message.answer(
         text=LEXICON_RU['error_incorrect_count']
@@ -134,3 +136,38 @@ async def warning_count(message: Message):
 async def process_button_approve_cart(callback: CallbackQuery, callback_data: ProductsCallbackFactory):
     await add_to_cart(callback.message.chat.id, callback_data.item_id, callback_data.count)
     await process_button_cart(callback)
+
+
+@router.callback_query(F.data.startswith('button-input-address'))
+async def process_button_input_address(callback: CallbackQuery, state: FSMContext):
+    await callback.message.edit_text(
+        text=LEXICON_RU['input_address'],
+    )
+    await state.set_state(PayTheCart.waiting_address)
+
+@router.message(StateFilter(PayTheCart.waiting_address))
+async def process_address_sent(message: Message, state: FSMContext):
+    order = await create_order_from_cart(message.chat.id, message.text)
+
+    await message.answer(
+        text=format_order_confirmation_message(order),
+        reply_markup=pay_keyboard(order),
+        parse_mode="HTML"
+    )
+    await state.clear()
+
+
+@router.callback_query(PaymentCallbackFactory.filter(F.button_name=='payment'))
+async def process_button_payment(callback: CallbackQuery, callback_data: PaymentCallbackFactory, bot: Bot):
+    prices = [LabeledPrice(label="К оплате", amount=int(callback_data.amount * 100))]
+
+    await bot.send_invoice(
+        chat_id=callback.message.chat.id,
+        title=f"Заказ №{callback_data.order_id}",
+        description="description",
+        payload=f"order_{callback_data.order_id}",
+        provider_token=config_settings.tg_bot.yukassa_token,
+        currency="RUB",
+        prices=prices,
+        start_parameter="test"
+    )

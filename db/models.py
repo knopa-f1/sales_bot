@@ -59,7 +59,8 @@ class Order(Base):
     user_id: Mapped[int] = mapped_column(ForeignKey('bot_admin_user.id'))
     amount: Mapped[float] = mapped_column(DECIMAL(10, 2))
     address: Mapped[str] = mapped_column(Text)
-    payment_id: Mapped[str] = mapped_column(String(255))
+    transaction_id: Mapped[str] = mapped_column(String(255))
+    status: Mapped[str] = mapped_column(String(50))
 
     user: Mapped["User"] = relationship("User", backref="orders")
 

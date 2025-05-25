@@ -1,4 +1,7 @@
 from aiogram.fsm.state import StatesGroup, State
 
-class AddToCard(StatesGroup):# pylint: disable=too-few-public-methods
+class AddToCart(StatesGroup):# pylint: disable=too-few-public-methods
     waiting_count = State()
+
+class PayTheCart(StatesGroup):# pylint: disable=too-few-public-methods
+    waiting_address = State()

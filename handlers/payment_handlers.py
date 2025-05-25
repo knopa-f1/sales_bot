@@ -1,10 +1,12 @@
 import logging
+from datetime import datetime
 
 from aiogram.enums import ContentType
 from aiogram.types import Message, SuccessfulPayment, PreCheckoutQuery
 from aiogram import Router
 
 from db.requests.orders import mark_order_as_paid
+from services.utils import append_payment_to_excel
 
 router = Router()
 
@@ -28,6 +30,17 @@ async def process_successful_payment(message: Message):
         order_id = int(payload.split("_")[1])
         await mark_order_as_paid(order_id, transaction_id=provider_transaction_id)
         logger.info(f"Order {order_id} has been paid")
+
+        await append_payment_to_excel(
+            order_id=order_id,
+            user_id=message.chat.id,
+            username=message.from_user.full_name,
+            amount=total_amount,
+            currency=currency,
+            provider_tx_id=provider_transaction_id,
+            timestamp=datetime.now()
+        )
+
         await message.answer(
             text=f"✅ Оплата успешна!\n"
             f"Заказ #{order_id} на сумму {total_amount:.2f} {currency} оплачен.\n"

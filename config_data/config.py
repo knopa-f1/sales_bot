@@ -21,5 +21,6 @@ class ConfigSettings(BaseSettings):
     tg_bot: TgBot = TgBot()
     db: DatabaseConfig = DatabaseConfig()
     env_type: str = Field("test", env="ENV_TYPE")
+    report_path: str
 
 config_settings = ConfigSettings()

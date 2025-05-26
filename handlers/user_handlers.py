@@ -65,8 +65,12 @@ async def check_subscription(callback: CallbackQuery, bot: Bot):
                 reply_markup=start_keyboard()
             )
         else:
-            await callback.message.edit_text(LEXICON_RU['error_unsubscribe_channel'],
+            text = LEXICON_RU['error_unsubscribe']
+            if callback.message.text != text:
+                await callback.message.edit_text(text,
                                              reply_markup=check_subscription_keyboard())
+            else:
+                return
     except Exception as e:
         logger.error(e)
         await callback.message.edit_text(LEXICON_RU['error_check_channel'])

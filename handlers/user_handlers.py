@@ -25,6 +25,8 @@ KEYBOARD = start_keyboard()
 
 STATES = [ChatMemberStatus.MEMBER, ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.CREATOR]
 
+logger = logging.getLogger(__name__)
+
 @router.message(CommandStart())
 async def process_start_command(message: Message, bot: Bot):
 
@@ -40,7 +42,7 @@ async def process_start_command(message: Message, bot: Bot):
                                  reply_markup=check_subscription_keyboard())
             return
     except Exception as e:
-        logging.error(e)
+        logger.error(e)
         await message.answer(LEXICON_RU['error_check_channel'])
         return
 
@@ -65,9 +67,10 @@ async def check_subscription(callback: CallbackQuery, bot: Bot):
         else:
             await callback.message.edit_text(LEXICON_RU['error_unsubscribe_channel'],
                                              reply_markup=check_subscription_keyboard())
-    except Exception:
-            await callback.message.edit_text(LEXICON_RU['error_check_channel'])
-            return
+    except Exception as e:
+        logger.error(e)
+        await callback.message.edit_text(LEXICON_RU['error_check_channel'])
+        return
 
 @router.callback_query(F.data.startswith('button-catalog'))
 async def process_button_catalog(callback: CallbackQuery):

@@ -116,7 +116,7 @@ def cart_keyboard(cart_items):
 
     return create_inline_kb(1, last_row=last_row, **buttons)
 
-def check_subscription():
+def check_subscription_keyboard():
     return InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text=LEXICON_BUTTONS_RU["button-go-to-channel"], url=f"https://t.me/{config_settings.tg_bot.required_channel.lstrip('@')}")],
         [InlineKeyboardButton(text=LEXICON_BUTTONS_RU["button-check-subscription"], callback_data="button-check-subscription")]

@@ -15,7 +15,7 @@ from db.requests.users import save_user
 from lexicon.lexicon import LEXICON_RU
 
 from keyboards.inline_keyboards import start_keyboard, category_keyboard, subcategory_keyboard, \
-    product_keyboard, add_to_cart_keyboard, cart_keyboard
+    product_keyboard, add_to_cart_keyboard, cart_keyboard, check_subscription_keyboard
 from services.utils import format_cart_message, format_order_confirmation_message
 from states.states import AddToCart, PayTheCart
 
@@ -36,7 +36,8 @@ async def process_start_command(message: Message, bot: Bot):
     try:
         member = await bot.get_chat_member(chat_id=config_settings.tg_bot.required_channel, user_id=message.chat.id)
         if member.status not in STATES:
-            await message.answer(LEXICON_RU['error_unsubscribe_channel'])
+            await message.answer(LEXICON_RU['error_unsubscribe_channel'],
+                                 reply_markup=check_subscription_keyboard())
             return
     except Exception as e:
         logging.error(e)
@@ -62,7 +63,8 @@ async def check_subscription(callback: CallbackQuery, bot: Bot):
                 reply_markup=start_keyboard()
             )
         else:
-            await callback.message.edit_text(LEXICON_RU['error_unsubscribe_channel'])
+            await callback.message.edit_text(LEXICON_RU['error_unsubscribe_channel'],
+                                             reply_markup=check_subscription_keyboard())
     except Exception:
             await callback.message.edit_text(LEXICON_RU['error_check_channel'])
             return

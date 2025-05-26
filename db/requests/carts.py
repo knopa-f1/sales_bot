@@ -1,9 +1,12 @@
+import logging
+
 from sqlalchemy import select, update, insert
 from sqlalchemy.orm import selectinload
 
 from db.models import Cart, User
 from db.connection import database
 
+logger = logging.getLogger(__name__)
 
 async def add_to_cart(chat_id: int, product_id: int, count: int):
     async with database.session as session:
@@ -13,7 +16,8 @@ async def add_to_cart(chat_id: int, product_id: int, count: int):
         user = result.scalar_one_or_none()
 
         if not user:
-            raise ValueError(f"Пользователь с chat_id={chat_id} не найден")
+            logger.error(f"Пользователь с chat_id={chat_id} не найден")
+            return
 
         result = await session.execute(
             select(Cart).where(Cart.user_id == user.id, Cart.product_id == product_id)

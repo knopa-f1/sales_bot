@@ -16,7 +16,8 @@ LEXICON_RU: dict[str, str] = {
     'error_incorrect_count': 'Необходимо ввести положительное количество товара.',
     'input_address': 'Введите адрес доставки:',
     'error_unsubscribe_channel':'"Чтобы пользоваться ботом, подпишитесь на наш канал и попробуйте снова."',
-    'error_check_channel':"Не удалось проверить подписку. Попробуйте позже."
+    'error_check_channel':"Не удалось проверить подписку. Попробуйте позже.",
+    'error_payment':"Платёж принят, но не удалось определить заказ."
 }
 
 LEXICON_BUTTONS_RU: dict[str, str] = {

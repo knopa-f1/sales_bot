@@ -3,7 +3,6 @@ import logging
 
 from aiogram import Bot, Dispatcher
 
-from db.base_model import register_models
 from keyboards.set_menu import set_main_menu
 from config_data.config import config_settings
 from handlers import other_handlers, user_handlers, payment_handlers, inline_queries

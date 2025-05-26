@@ -1,5 +1,4 @@
 from sqlalchemy import select, func
-from sqlalchemy.orm import selectinload
 
 from config_data.constants import PAGE_SIZE
 from db.models import Catalog, Product

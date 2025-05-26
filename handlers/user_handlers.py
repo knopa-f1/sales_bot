@@ -6,9 +6,9 @@ from aiogram.filters import Command, CommandStart, StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery, InputMediaPhoto, FSInputFile, LabeledPrice
 
-from db.requests.carts import add_to_cart, get_cart_items
+from db.requests.carts import add_to_cart, get_cart_items, remove_from_cart
 from db.requests.orders import create_order_from_cart
-from keyboards.callback_factories import ProductsCallbackFactory, PaymentCallbackFactory
+from keyboards.callback_factories import ProductsCallbackFactory, CartCallbackFactory
 from config_data.config import config_settings
 from db.requests.categories_products import get_paginated_categories, get_subcategories_by_category, get_products_by_catalog
 from db.requests.users import save_user
@@ -27,6 +27,7 @@ STATES = [ChatMemberStatus.MEMBER, ChatMemberStatus.ADMINISTRATOR, ChatMemberSta
 
 @router.message(CommandStart())
 async def process_start_command(message: Message, bot: Bot):
+
     await save_user(
         chat_id=message.chat.id,
         name=message.from_user.full_name
@@ -76,7 +77,7 @@ async def process_button_cart(callback: CallbackQuery):
     cart_items, total = await get_cart_items(callback.message.chat.id)
     await callback.message.edit_text(text=format_cart_message(cart_items, total),
                                      parse_mode="HTML",
-                                     reply_markup=cart_keyboard())
+                                     reply_markup=cart_keyboard(cart_items))
 
 @router.callback_query(ProductsCallbackFactory.filter(F.button_name=='cat-page'))
 async def process_category_navigation(callback: CallbackQuery, callback_data: ProductsCallbackFactory):
@@ -164,6 +165,11 @@ async def warning_count(message: Message):
 @router.callback_query(ProductsCallbackFactory.filter(F.button_name=='add-cart'))
 async def process_button_approve_cart(callback: CallbackQuery, callback_data: ProductsCallbackFactory):
     await add_to_cart(callback.message.chat.id, callback_data.item_id, callback_data.count)
+    await process_button_cart(callback)
+
+@router.callback_query(CartCallbackFactory.filter(F.button_name=='del-item'))
+async def process_button_del_item(callback: CallbackQuery, callback_data: CartCallbackFactory):
+    await remove_from_cart(callback.message.chat.id, callback_data.item_id)
     await process_button_cart(callback)
 
 

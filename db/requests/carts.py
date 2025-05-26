@@ -28,19 +28,23 @@ async def add_to_cart(chat_id: int, product_id: int, count: int):
 
         await session.commit()
 
-async def remove_from_cart(user_id: int, product_id: int):
+async def remove_from_cart(chat_id: int, product_id: int):
     async with database.session as session:
         result = await session.execute(
-            select(Cart).where(Cart.user_id == user_id, Cart.product_id == product_id)
+            select(User).where(User.chat_id == chat_id)
+        )
+        user = result.scalar_one_or_none()
+
+        if not user:
+            return
+
+        result = await session.execute(
+            select(Cart).where(Cart.user_id == user.id, Cart.product_id == product_id)
         )
         cart_item = result.scalar_one_or_none()
 
         if cart_item:
-            if cart_item.count > 1:
-                cart_item.count -= 1
-            else:
-                await session.delete(cart_item)
-
+            await session.delete(cart_item)
             await session.commit()
 
 

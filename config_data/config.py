@@ -1,7 +1,6 @@
+from dotenv import load_dotenv, find_dotenv
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from dotenv import load_dotenv, find_dotenv
-
 
 env_path = find_dotenv()
 load_dotenv(env_path)
@@ -11,10 +10,11 @@ class DatabaseConfig(BaseSettings):
     dsn: str = Field("", alias="DSN")
     image_path: str
 
+
 class TgBot(BaseSettings):
     token: str = Field(..., alias="bot_token")
     yukassa_token: str = Field(..., alias="YUKASSA_TOKEN")
-    required_channel:str = Field(..., alias="REQUIRED_CHANNEL")
+    required_channel: str
 
 
 class ConfigSettings(BaseSettings):

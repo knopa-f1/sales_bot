@@ -19,4 +19,5 @@ class Database:
     def session(self) -> AsyncSession:
         return self.__session
 
+
 database: Database = Database()

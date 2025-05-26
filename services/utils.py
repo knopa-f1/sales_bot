@@ -6,7 +6,6 @@ from openpyxl.utils import get_column_letter
 from openpyxl.workbook import Workbook
 
 from config_data.config import config_settings
-from db.requests.carts import get_cart_items
 
 
 def format_cart_message(cart_items, total) -> str:
@@ -26,10 +25,12 @@ def format_cart_message(cart_items, total) -> str:
 
     return "\n".join(lines)
 
+
 def format_order_confirmation_message(order) -> str:
     return (
         f"Доставка по адресу:\n{order.address}\n"
     )
+
 
 async def append_payment_to_excel(order_id: int, user_id: int, username: str, amount: float,
                                   currency: str, provider_tx_id: str, timestamp: datetime):

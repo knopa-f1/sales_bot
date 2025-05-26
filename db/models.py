@@ -1,16 +1,16 @@
 import datetime
 from enum import Enum as PyEnum
+from typing import Optional
 
 from sqlalchemy import (
     BigInteger, ForeignKey, Integer, String, Text, DECIMAL, Table, Column, Enum, DateTime
 )
-
 from sqlalchemy.orm import relationship, Mapped, mapped_column
-from typing import Optional
 
 from db.base_model import Base
 
-class Catalog(Base):
+
+class Catalog(Base): # pylint: disable=too-few-public-methods
     __tablename__ = 'bot_admin_catalog'
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -22,7 +22,7 @@ class Catalog(Base):
     )
 
 
-class Product(Base):
+class Product(Base): # pylint: disable=too-few-public-methods
     __tablename__ = 'bot_admin_product'
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -35,7 +35,7 @@ class Product(Base):
     catalog: Mapped["Catalog"] = relationship("Catalog", backref="products")
 
 
-class User(Base):
+class User(Base): # pylint: disable=too-few-public-methods
     __tablename__ = 'bot_admin_user'
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -43,7 +43,7 @@ class User(Base):
     name: Mapped[str] = mapped_column(String(255))
 
 
-class Cart(Base):
+class Cart(Base): # pylint: disable=too-few-public-methods
     __tablename__ = 'bot_admin_cart'
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -55,7 +55,7 @@ class Cart(Base):
     product: Mapped["Product"] = relationship("Product")
 
 
-class Order(Base):
+class Order(Base): # pylint: disable=too-few-public-methods
     __tablename__ = 'bot_admin_order'
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -68,7 +68,7 @@ class Order(Base):
     user: Mapped["User"] = relationship("User", backref="orders")
 
 
-class OrderItem(Base):
+class OrderItem(Base): # pylint: disable=too-few-public-methods
     __tablename__ = 'bot_admin_orderitem'
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -80,10 +80,12 @@ class OrderItem(Base):
     order: Mapped["Order"] = relationship("Order", backref="items")
     product: Mapped["Product"] = relationship("Product")
 
+
 class BroadcastStatus(PyEnum):
     pending = "pending"
     sent = "sent"
     error = "error"
+
 
 broadcast_recipients = Table(
     "bot_admin_broadcast_recipients",
@@ -92,7 +94,8 @@ broadcast_recipients = Table(
     Column("user_id", ForeignKey("bot_admin_user.id"), primary_key=True)
 )
 
-class Broadcast(Base):
+
+class Broadcast(Base): # pylint: disable=too-few-public-methods
     __tablename__ = "bot_admin_broadcast"
 
     id: Mapped[int] = mapped_column(primary_key=True)

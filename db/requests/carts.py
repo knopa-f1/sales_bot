@@ -1,22 +1,21 @@
 import logging
 
-from sqlalchemy import select, update, insert
+from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
-from db.models import Cart, User
 from db.connection import database
+from db.models import Cart
+from db.requests.users import get_user_by_chat_id
 
 logger = logging.getLogger(__name__)
 
+
 async def add_to_cart(chat_id: int, product_id: int, count: int):
     async with database.session as session:
-        result = await session.execute(
-            select(User).where(User.chat_id == chat_id)
-        )
-        user = result.scalar_one_or_none()
+        user = await get_user_by_chat_id(session, chat_id)
 
         if not user:
-            logger.error(f"Пользователь с chat_id={chat_id} не найден")
+            logger.error("Пользователь с chat_id=%s не найден при добавлении в корзину", chat_id)
             return
 
         result = await session.execute(
@@ -32,12 +31,11 @@ async def add_to_cart(chat_id: int, product_id: int, count: int):
 
         await session.commit()
 
+
+
 async def remove_from_cart(chat_id: int, product_id: int):
     async with database.session as session:
-        result = await session.execute(
-            select(User).where(User.chat_id == chat_id)
-        )
-        user = result.scalar_one_or_none()
+        user = await get_user_by_chat_id(session, chat_id)
 
         if not user:
             return
@@ -54,10 +52,7 @@ async def remove_from_cart(chat_id: int, product_id: int):
 
 async def get_cart_items(chat_id: int):
     async with database.session as session:
-        result = await session.execute(
-            select(User).where(User.chat_id == chat_id)
-        )
-        user = result.scalar_one_or_none()
+        user = await get_user_by_chat_id(session, chat_id)
 
         if not user:
             return [], 0

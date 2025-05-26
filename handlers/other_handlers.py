@@ -4,7 +4,6 @@ from aiogram.types import Message
 from keyboards.inline_keyboards import start_keyboard
 from lexicon.lexicon import LEXICON_RU
 
-
 router = Router()
 
 

@@ -1,10 +1,12 @@
-from aiogram.types import InlineQuery, InlineQueryResultArticle, InputTextMessageContent
-from aiogram import Router
 from uuid import uuid4
+
+from aiogram import Router
+from aiogram.types import InlineQuery, InlineQueryResultArticle, InputTextMessageContent
 
 from lexicon.faq import FAQ_ENTRIES_RU
 
 router = Router()
+
 
 @router.inline_query()
 async def handle_faq_inline_query(inline_query: InlineQuery):

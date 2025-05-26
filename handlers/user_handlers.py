@@ -6,16 +6,16 @@ from aiogram.filters import Command, CommandStart, StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery, InputMediaPhoto, FSInputFile, LabeledPrice
 
-from db.requests.carts import add_to_cart, get_cart_items, remove_from_cart
-from db.requests.orders import create_order_from_cart
-from keyboards.callback_factories import ProductsCallbackFactory, CartCallbackFactory
 from config_data.config import config_settings
-from db.requests.categories_products import get_paginated_categories, get_subcategories_by_category, get_products_by_catalog
+from db.requests.carts import add_to_cart, get_cart_items, remove_from_cart
+from db.requests.categories_products import get_paginated_categories, get_subcategories_by_category, \
+    get_products_by_catalog
+from db.requests.orders import create_order_from_cart
 from db.requests.users import save_user
-from lexicon.lexicon import LEXICON_RU
-
+from keyboards.callback_factories import ProductsCallbackFactory, CartCallbackFactory
 from keyboards.inline_keyboards import start_keyboard, category_keyboard, subcategory_keyboard, \
     product_keyboard, add_to_cart_keyboard, cart_keyboard, check_subscription_keyboard
+from lexicon.lexicon import LEXICON_RU
 from services.utils import format_cart_message, format_order_confirmation_message
 from states.states import AddToCart, PayTheCart
 
@@ -27,9 +27,9 @@ STATES = [ChatMemberStatus.MEMBER, ChatMemberStatus.ADMINISTRATOR, ChatMemberSta
 
 logger = logging.getLogger(__name__)
 
+
 @router.message(CommandStart())
 async def process_start_command(message: Message, bot: Bot):
-
     await save_user(
         chat_id=message.chat.id,
         name=message.from_user.full_name
@@ -51,14 +51,17 @@ async def process_start_command(message: Message, bot: Bot):
         reply_markup=start_keyboard()
     )
 
+
 @router.message(Command(commands='help'))
 async def process_help_command(message: Message):
     await message.answer(text=LEXICON_RU['/help'])
 
+
 @router.callback_query(F.data.startswith("button-check-subscription"))
 async def check_subscription(callback: CallbackQuery, bot: Bot):
     try:
-        member = await bot.get_chat_member(chat_id=config_settings.tg_bot.required_channel, user_id=callback.message.chat.id)
+        member = await bot.get_chat_member(chat_id=config_settings.tg_bot.required_channel,
+                                           user_id=callback.message.chat.id)
         if member.status in STATES:
             await callback.message.edit_text(
                 text=LEXICON_RU['/start'],
@@ -68,7 +71,7 @@ async def check_subscription(callback: CallbackQuery, bot: Bot):
             text = LEXICON_RU['error_unsubscribe']
             if callback.message.text != text:
                 await callback.message.edit_text(text,
-                                             reply_markup=check_subscription_keyboard())
+                                                 reply_markup=check_subscription_keyboard())
             else:
                 return
     except Exception as e:
@@ -76,10 +79,13 @@ async def check_subscription(callback: CallbackQuery, bot: Bot):
         await callback.message.edit_text(LEXICON_RU['error_check_channel'])
         return
 
+
 @router.callback_query(F.data.startswith('button-catalog'))
 async def process_button_catalog(callback: CallbackQuery):
     categories, count = await get_paginated_categories(page=1)
-    await callback.message.edit_text(text=LEXICON_RU['choose_category'], reply_markup=category_keyboard(categories, 1, count))
+    await callback.message.edit_text(text=LEXICON_RU['choose_category'],
+                                     reply_markup=category_keyboard(categories, 1, count))
+
 
 @router.callback_query(F.data.startswith('button-cart'))
 async def process_button_cart(callback: CallbackQuery):
@@ -88,10 +94,13 @@ async def process_button_cart(callback: CallbackQuery):
                                      parse_mode="HTML",
                                      reply_markup=cart_keyboard(cart_items))
 
-@router.callback_query(ProductsCallbackFactory.filter(F.button_name=='cat-page'))
+
+@router.callback_query(ProductsCallbackFactory.filter(F.button_name == 'cat-page'))
 async def process_category_navigation(callback: CallbackQuery, callback_data: ProductsCallbackFactory):
     categories, count = await get_paginated_categories(page=callback_data.page_id)
-    await callback.message.edit_text(text=LEXICON_RU['choose_category'], reply_markup=category_keyboard(categories, callback_data.page_id, count))
+    await callback.message.edit_text(text=LEXICON_RU['choose_category'],
+                                     reply_markup=category_keyboard(categories, callback_data.page_id, count))
+
 
 @router.callback_query(ProductsCallbackFactory.filter(F.button_name == 'cur-cat'))
 @router.callback_query(ProductsCallbackFactory.filter(F.button_name == 'subcat-page'))
@@ -112,8 +121,9 @@ async def process_subcategory_navigation(callback: CallbackQuery, callback_data:
             reply_markup=keyboard
         )
 
-@router.callback_query(ProductsCallbackFactory.filter(F.button_name=='cur-subcat'))
-@router.callback_query(ProductsCallbackFactory.filter(F.button_name=='product-page'))
+
+@router.callback_query(ProductsCallbackFactory.filter(F.button_name == 'cur-subcat'))
+@router.callback_query(ProductsCallbackFactory.filter(F.button_name == 'product-page'))
 async def process_product_navigation(callback: CallbackQuery, callback_data: ProductsCallbackFactory):
     product, count = await get_products_by_catalog(callback_data.subcategory_id, page=callback_data.page_id)
     if not product:
@@ -131,8 +141,10 @@ async def process_product_navigation(callback: CallbackQuery, callback_data: Pro
 
     await callback.message.edit_media(
         media,
-        reply_markup=product_keyboard(product, callback_data.category_id, callback_data.subcategory_id, callback_data.page_id, count)
+        reply_markup=product_keyboard(product, callback_data.category_id, callback_data.subcategory_id,
+                                      callback_data.page_id, count)
     )
+
 
 @router.callback_query(F.data == 'button-start-menu')
 async def process_button_back_to_start_menu(callback: CallbackQuery):
@@ -141,8 +153,10 @@ async def process_button_back_to_start_menu(callback: CallbackQuery):
         reply_markup=start_keyboard()
     )
 
-@router.callback_query(ProductsCallbackFactory.filter(F.button_name=='input_count'))
-async def process_button_input_count(callback: CallbackQuery, callback_data: ProductsCallbackFactory, state: FSMContext):
+
+@router.callback_query(ProductsCallbackFactory.filter(F.button_name == 'input_count'))
+async def process_button_input_count(callback: CallbackQuery, callback_data: ProductsCallbackFactory,
+                                     state: FSMContext):
     await callback.message.delete()
     await callback.message.answer(
         text=LEXICON_RU['input_count'],
@@ -165,18 +179,21 @@ async def process_count_sent(message: Message, state: FSMContext):
     )
     await state.clear()
 
+
 @router.message(StateFilter(AddToCart.waiting_count))
 async def warning_count(message: Message):
     await message.answer(
         text=LEXICON_RU['error_incorrect_count']
     )
 
-@router.callback_query(ProductsCallbackFactory.filter(F.button_name=='add-cart'))
+
+@router.callback_query(ProductsCallbackFactory.filter(F.button_name == 'add-cart'))
 async def process_button_approve_cart(callback: CallbackQuery, callback_data: ProductsCallbackFactory):
     await add_to_cart(callback.message.chat.id, callback_data.item_id, callback_data.count)
     await process_button_cart(callback)
 
-@router.callback_query(CartCallbackFactory.filter(F.button_name=='del-item'))
+
+@router.callback_query(CartCallbackFactory.filter(F.button_name == 'del-item'))
 async def process_button_del_item(callback: CallbackQuery, callback_data: CartCallbackFactory):
     await remove_from_cart(callback.message.chat.id, callback_data.item_id)
     await process_button_cart(callback)
@@ -188,6 +205,7 @@ async def process_button_input_address(callback: CallbackQuery, state: FSMContex
         text=LEXICON_RU['input_address'],
     )
     await state.set_state(PayTheCart.waiting_address)
+
 
 @router.message(StateFilter(PayTheCart.waiting_address))
 async def process_address_sent(message: Message, state: FSMContext, bot: Bot):

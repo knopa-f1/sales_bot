@@ -1,8 +1,8 @@
 from sqlalchemy import select, func
 
 from config_data.constants import PAGE_SIZE
-from db.models import Catalog, Product
 from db.connection import database
+from db.models import Catalog, Product
 
 
 async def get_paginated_categories(page: int = 1, page_size: int = PAGE_SIZE):
@@ -29,8 +29,9 @@ async def get_paginated_categories(page: int = 1, page_size: int = PAGE_SIZE):
 
         return categories, total_count
 
+
 async def get_subcategories_by_category(
-    category_id: int, page: int = 1, page_size: int = PAGE_SIZE
+        category_id: int, page: int = 1, page_size: int = PAGE_SIZE
 ):
     offset = (page - 1) * page_size
 
@@ -55,10 +56,11 @@ async def get_subcategories_by_category(
 
         return subcategories, total_count
 
+
 async def get_products_by_catalog(
-    catalog_id: int, page: int = 1
+        catalog_id: int, page: int = 1
 ):
-    offset = (page - 1)
+    offset = page - 1
 
     async with database.session as session:
         result = await session.execute(

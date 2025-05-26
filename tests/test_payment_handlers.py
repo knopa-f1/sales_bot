@@ -1,6 +1,8 @@
-import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
 from aiogram.types import PreCheckoutQuery, SuccessfulPayment, Message
+
 from handlers.payment_handlers import handle_pre_checkout_query, process_successful_payment
 
 
@@ -14,6 +16,7 @@ async def test_pre_checkout_query_ok():
     await handle_pre_checkout_query(mock_query, mock_bot)
 
     mock_bot.answer_pre_checkout_query.assert_called_once_with("test_query_123", ok=True)
+
 
 @pytest.mark.asyncio
 @patch("handlers.payment_handlers.mark_order_as_paid", new_callable=AsyncMock)
@@ -44,4 +47,3 @@ async def test_successful_payment(mock_excel, mock_paid):
     mock_paid.assert_awaited_once_with(42, transaction_id="prv_tx_001")
     mock_excel.assert_awaited_once()
     mock_message.answer.assert_called_once()
-

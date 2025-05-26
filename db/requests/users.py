@@ -18,3 +18,11 @@ async def save_user(chat_id: int, name: str):
             session.add(user)
 
         await session.commit()
+
+
+async def get_user_by_chat_id(chat_id: int) -> User | None:
+    async with database.session as session:
+        result = await session.execute(
+            select(User).where(User.chat_id == chat_id)
+        )
+        return result.scalar_one_or_none()

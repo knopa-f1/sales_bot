@@ -1,1 +1,2 @@
 PAGE_SIZE=4
+SCHEDULER_INTERVAL = 30 # seconds

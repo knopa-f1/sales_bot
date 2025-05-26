@@ -1,5 +1,8 @@
+import datetime
+from enum import Enum as PyEnum
+
 from sqlalchemy import (
-    BigInteger, ForeignKey, Integer, String, Text, DECIMAL
+    BigInteger, ForeignKey, Integer, String, Text, DECIMAL, Table, Column, Enum, DateTime
 )
 
 from sqlalchemy.orm import relationship, Mapped, mapped_column
@@ -76,3 +79,30 @@ class OrderItem(Base):
 
     order: Mapped["Order"] = relationship("Order", backref="items")
     product: Mapped["Product"] = relationship("Product")
+
+class BroadcastStatus(PyEnum):
+    pending = "pending"
+    sent = "sent"
+    error = "error"
+
+broadcast_recipients = Table(
+    "bot_admin_broadcast_recipients",
+    Base.metadata,
+    Column("broadcast_id", ForeignKey("bot_admin_broadcast.id"), primary_key=True),
+    Column("user_id", ForeignKey("bot_admin_user.id"), primary_key=True)
+)
+
+class Broadcast(Base):
+    __tablename__ = "bot_admin_broadcast"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    message: Mapped[str] = mapped_column(Text)
+    status: Mapped[str] = mapped_column(Enum(BroadcastStatus), default=BroadcastStatus.pending)
+    created_at: Mapped[datetime.datetime] = mapped_column(DateTime, default=datetime.datetime.now(datetime.UTC))
+    sent_at: Mapped[datetime.datetime] = mapped_column(DateTime, nullable=True)
+
+    recipients: Mapped[list["User"]] = relationship(
+        "User",
+        secondary=broadcast_recipients,
+        backref="broadcasts"
+    )
